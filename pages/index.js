@@ -11,6 +11,7 @@ export default function Home(){
   const [step,setStep]=useState('search');
   const [admin,setAdmin]=useState(false);
   const [pass,setPass]=useState('');
+  
 
   const load=async()=>{
     setGuests(await fetch('/api/guests').then(r=>r.json()));
@@ -80,14 +81,66 @@ export default function Home(){
         </>}
       </>}
 
-      {admin && <>
-        <input type="password" placeholder="Admin Password" value={pass} onChange={e=>setPass(e.target.value)} />
-        {pass==='engagement2026' && <>
-          <h4>Responses</h4>
-          {responses.map((r,i)=>
-            <div key={i} className="card-sm">
-              <b>{r.name}</b><div>{r.status} • {r.dietary||'No dietary'}</div>
-            </div>
+      {admin && (
+<>
+<input
+  type="password"
+  placeholder="Enter Admin Password"
+  value={pass}
+  onChange={e=>setPass(e.target.value)}
+/>
+
+{pass==='engagement2026' && (
+<>
+<h3>Upload Guest CSV</h3>
+
+<input type="file" onChange={e=>setFile(e.target.files[0])}/>
+<button onClick={async()=>{
+  const txt=await file.text();
+  const names=txt.split(/\r?\n/).map(x=>x.split(',')[0]).filter(Boolean);
+  await fetch('/api/guests-bulk',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({names})
+  });
+  alert("Guests Uploaded!");
+}}>Upload</button>
+
+<br/><br/>
+
+<a href="/api/export">Download Responses</a>
+
+<h3>Responses</h3>
+
+{responses.map((r,i)=>
+  <div className="card-sm" key={i}>
+    <b>{r.name}</b> — {r.status} • {r.dietary||'No dietary'}
+
+    <div className="row">
+      <button onClick={async()=>{
+        await fetch('/api/force',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({name:r.name,status:'Attending'})
+        });
+        load();
+      }}>✓</button>
+
+      <button onClick={async()=>{
+        await fetch('/api/force',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({name:r.name,status:'Declined'})
+        });
+        load();
+      }}>✗</button>
+    </div>
+  </div>
+)}
+</>
+)}
+</>
+)}
           )}
         </>}
       </>}
