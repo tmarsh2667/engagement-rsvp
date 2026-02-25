@@ -1,6 +1,6 @@
 
 import { pool } from '../../lib/db'
-export default async function handler(req,res){
+export default async function handler(req, res)
   if(req.method==='GET'){
     const r=await pool.query('SELECT id,name FROM guests ORDER BY name');
     res.json(r.rows);return;
