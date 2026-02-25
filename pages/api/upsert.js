@@ -1,6 +1,6 @@
 
 import { pool } from '../../lib/db'
-export default async function handler(req,res){
+export default async function handler(req, res)
   const {name,status,dietary}=req.body;
   await pool.query(`
   INSERT INTO responses(guest_id,status,dietary)
